@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:whatsapp/Components/chat_card.dart';
 import 'package:whatsapp/models/chat_Model.dart';
-import 'package:whatsapp/pages/chat_detail.dart';
+import 'package:whatsapp/pages/select_contact.dart';
 
 class ChatPage extends StatefulWidget {
   const ChatPage({Key? key}) : super(key: key);
@@ -15,7 +15,6 @@ class ChatPage extends StatefulWidget {
 class _ChatPageState extends State<ChatPage> {
   @override
   Widget build(BuildContext context) {
-    double width = MediaQuery.of(context).size.width;
     return Scaffold(
       body: ListView.builder(
         itemCount: chatdata.length,
@@ -91,7 +90,10 @@ class _ChatPageState extends State<ChatPage> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () {
+          Navigator.push(context,
+              MaterialPageRoute(builder: (builder) => SelectContact()));
+        },
         child: Icon(Icons.chat),
       ),
     );
