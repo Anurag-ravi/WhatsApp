@@ -13,36 +13,33 @@ class ButtonCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
-    return InkWell(
-      onTap: () {},
-      child: Column(
-        children: [
-          SizedBox(
-            height: 2.5,
-          ),
-          ListTile(
-            leading: CircleAvatar(
-              backgroundColor: Color(0xff25d366),
-              child: Icon(
-                icon,
-                size: 22,
-                color: Colors.white,
-              ),
-              radius: 25,
+    return Column(
+      children: [
+        SizedBox(
+          height: 2.5,
+        ),
+        ListTile(
+          leading: CircleAvatar(
+            backgroundColor: Color(0xff25d366),
+            child: Icon(
+              icon,
+              size: 22,
+              color: Colors.white,
             ),
-            title: Text(
-              name,
-              style: TextStyle(
-                fontWeight: FontWeight.w600,
-                fontSize: width * 0.045,
-              ),
+            radius: 25,
+          ),
+          title: Text(
+            name,
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: width * 0.045,
             ),
           ),
-          SizedBox(
-            height: 2.5,
-          )
-        ],
-      ),
+        ),
+        SizedBox(
+          height: 2.5,
+        )
+      ],
     );
   }
 }

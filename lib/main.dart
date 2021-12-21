@@ -1,8 +1,15 @@
 // ignore_for_file: prefer_const_constructors
+import 'dart:async';
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:whatsapp/Screens/camera_screen.dart';
 import 'package:whatsapp/pages/homepage.dart';
 
 Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  cameras = await availableCameras();
+
   runApp(const MyApp());
 }
 

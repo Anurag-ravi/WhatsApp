@@ -8,6 +8,7 @@ class ChatModel {
   final String avatar;
   final String status;
   final bool isGroup;
+  bool select = false;
 
   ChatModel(
       {required this.id,
@@ -16,7 +17,8 @@ class ChatModel {
       required this.time,
       required this.avatar,
       required this.status,
-      required this.isGroup});
+      required this.isGroup,
+      this.select = false});
 }
 
 List<ChatModel> chatdata = [

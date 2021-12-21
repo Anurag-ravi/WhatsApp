@@ -14,39 +14,59 @@ class ContactCard extends StatelessWidget {
     double width = MediaQuery.of(context).size.width;
     return chatmodel.isGroup
         ? Container()
-        : InkWell(
-            onTap: () {},
-            child: ListTile(
-              leading: CircleAvatar(
-                backgroundColor: Color(0xffc0c0c0),
-                child: chatmodel.avatar == ''
-                    ? SvgPicture.asset(
-                        chatmodel.isGroup
-                            ? "images/groups.svg"
-                            : "images/person.svg",
-                        color: Colors.white,
-                        width: 35,
-                        height: 35,
-                      )
-                    : null,
-                backgroundImage: chatmodel.avatar != ''
-                    ? AssetImage(chatmodel.avatar)
-                    : null,
-                radius: 25,
+        : ListTile(
+            leading: Container(
+              height: 53,
+              width: 50,
+              child: Stack(
+                children: [
+                  CircleAvatar(
+                    backgroundColor: Color(0xffc0c0c0),
+                    child: chatmodel.avatar == ''
+                        ? SvgPicture.asset(
+                            chatmodel.isGroup
+                                ? "images/groups.svg"
+                                : "images/person.svg",
+                            color: Colors.white,
+                            width: 35,
+                            height: 35,
+                          )
+                        : null,
+                    backgroundImage: chatmodel.avatar != ''
+                        ? AssetImage(chatmodel.avatar)
+                        : null,
+                    radius: 25,
+                  ),
+                  chatmodel.select
+                      ? Positioned(
+                          bottom: 2,
+                          right: 2,
+                          child: CircleAvatar(
+                            backgroundColor: Colors.teal,
+                            child: Icon(
+                              Icons.check,
+                              color: Colors.white,
+                              size: 18,
+                            ),
+                            radius: 11,
+                          ),
+                        )
+                      : Container(),
+                ],
               ),
-              title: Text(
-                chatmodel.name,
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  fontSize: width * 0.045,
-                ),
+            ),
+            title: Text(
+              chatmodel.name,
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: width * 0.045,
               ),
-              subtitle: Text(
-                chatmodel.status,
-                style: TextStyle(
-                  color: Colors.grey,
-                  fontSize: width * 0.035,
-                ),
+            ),
+            subtitle: Text(
+              chatmodel.status,
+              style: TextStyle(
+                color: Colors.grey,
+                fontSize: width * 0.035,
               ),
             ),
           );
