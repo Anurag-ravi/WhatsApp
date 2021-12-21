@@ -5,6 +5,7 @@ import 'package:camera/camera.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:whatsapp/Screens/camera_view.dart';
+import 'package:whatsapp/Screens/video_view.dart';
 
 List<CameraDescription> cameras = [];
 
@@ -19,6 +20,7 @@ class _CameraScreenState extends State<CameraScreen> {
   late CameraController _cameraController;
 
   late Future<void> cameraValue;
+  bool isRecording = false;
 
   @override
   void initState() {
@@ -71,13 +73,46 @@ class _CameraScreenState extends State<CameraScreen> {
                         color: Colors.white,
                         iconSize: 28,
                       ),
-                      IconButton(
-                        onPressed: () {
-                          takePhoto(context);
+                      GestureDetector(
+                        onLongPress: () async {
+                          setState(() {
+                            isRecording = true;
+                          });
+                          await _cameraController.startVideoRecording();
                         },
-                        icon: Icon(Icons.panorama_fish_eye),
-                        color: Colors.white,
-                        iconSize: 70,
+                        onLongPressUp: () async {
+                          final path = join(
+                              (await getTemporaryDirectory()).path,
+                              "${DateTime.now()}.mp4");
+                          final video =
+                              await _cameraController.stopVideoRecording();
+                          video.saveTo(path);
+                          setState(() {
+                            isRecording = false;
+                          });
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (builder) => VideoView(
+                                        path: path,
+                                      )));
+                        },
+                        onTap: () {
+                          if (!isRecording) {
+                            takePhoto(context);
+                          }
+                        },
+                        child: isRecording
+                            ? Icon(
+                                Icons.radio_button_on,
+                                color: Colors.red,
+                                size: 80,
+                              )
+                            : Icon(
+                                Icons.panorama_fish_eye,
+                                color: Colors.white,
+                                size: 70,
+                              ),
                       ),
                       IconButton(
                         onPressed: () {},

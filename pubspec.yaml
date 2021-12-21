@@ -39,6 +39,7 @@ dependencies:
   camera: ^0.9.1+1
   path_provider: ^1.6.28
   path: ^1.8.0
+  video_player: ^2.2.9
 
 dev_dependencies:
   flutter_test:
