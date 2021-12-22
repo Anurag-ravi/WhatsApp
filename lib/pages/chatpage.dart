@@ -1,9 +1,9 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 
 import 'package:flutter/material.dart';
-import 'package:whatsapp/Components/chat_card.dart';
+import 'package:whatsapp/Components/chatPage/chat_card.dart';
+import 'package:whatsapp/Screens/chatPage/select_contact.dart';
 import 'package:whatsapp/models/chat_Model.dart';
-import 'package:whatsapp/pages/select_contact.dart';
 
 class ChatPage extends StatefulWidget {
   const ChatPage({Key? key}) : super(key: key);

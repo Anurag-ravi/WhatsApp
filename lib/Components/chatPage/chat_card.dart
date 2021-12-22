@@ -2,8 +2,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:whatsapp/Screens/chatPage/chat_detail.dart';
 import 'package:whatsapp/models/chat_Model.dart';
-import 'package:whatsapp/pages/chat_detail.dart';
 
 class Chatcard extends StatelessWidget {
   const Chatcard({

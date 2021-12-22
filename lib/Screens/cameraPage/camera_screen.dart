@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:whatsapp/Screens/camera_view.dart';
-import 'package:whatsapp/Screens/video_view.dart';
+import 'package:whatsapp/Screens/cameraPage/camera_view.dart';
+import 'package:whatsapp/Screens/cameraPage/video_view.dart';
 
 List<CameraDescription> cameras = [];
 
@@ -21,6 +21,8 @@ class _CameraScreenState extends State<CameraScreen> {
 
   late Future<void> cameraValue;
   bool isRecording = false;
+  bool flash = false;
+  bool isFront = true;
 
   @override
   void initState() {
@@ -68,8 +70,15 @@ class _CameraScreenState extends State<CameraScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       IconButton(
-                        onPressed: () {},
-                        icon: Icon(Icons.flash_off),
+                        onPressed: () {
+                          setState(() {
+                            flash = !flash;
+                          });
+                          flash
+                              ? _cameraController.setFlashMode(FlashMode.always)
+                              : _cameraController.setFlashMode(FlashMode.off);
+                        },
+                        icon: Icon(flash ? Icons.flash_on : Icons.flash_off),
                         color: Colors.white,
                         iconSize: 28,
                       ),
@@ -81,12 +90,8 @@ class _CameraScreenState extends State<CameraScreen> {
                           await _cameraController.startVideoRecording();
                         },
                         onLongPressUp: () async {
-                          final path = join(
-                              (await getTemporaryDirectory()).path,
-                              "${DateTime.now()}.mp4");
                           final video =
                               await _cameraController.stopVideoRecording();
-                          video.saveTo(path);
                           setState(() {
                             isRecording = false;
                           });
@@ -94,7 +99,7 @@ class _CameraScreenState extends State<CameraScreen> {
                               context,
                               MaterialPageRoute(
                                   builder: (builder) => VideoView(
-                                        path: path,
+                                        path: video.path,
                                       )));
                         },
                         onTap: () {
@@ -115,7 +120,15 @@ class _CameraScreenState extends State<CameraScreen> {
                               ),
                       ),
                       IconButton(
-                        onPressed: () {},
+                        onPressed: () async {
+                          setState(() {
+                            isFront = !isFront;
+                          });
+                          int camerapos = isFront ? 0 : 1;
+                          _cameraController = CameraController(
+                              cameras[camerapos], ResolutionPreset.high);
+                          cameraValue = _cameraController.initialize();
+                        },
                         icon: Icon(Icons.flip_camera_ios),
                         color: Colors.white,
                         iconSize: 28,
@@ -139,15 +152,8 @@ class _CameraScreenState extends State<CameraScreen> {
   }
 
   void takePhoto(BuildContext context) async {
-    final path =
-        join((await getTemporaryDirectory()).path, "${DateTime.now()}.png");
     final img = await _cameraController.takePicture();
-    img.saveTo(path);
-    Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (builder) => CameraView(
-                  path: path,
-                )));
+    Navigator.push(context,
+        MaterialPageRoute(builder: (builder) => CameraView(path: img.path)));
   }
 }

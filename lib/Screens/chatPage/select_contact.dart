@@ -1,10 +1,10 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 
 import 'package:flutter/material.dart';
-import 'package:whatsapp/Components/button_card.dart';
-import 'package:whatsapp/Components/contact_card.dart';
+import 'package:whatsapp/Components/chatPage/button_card.dart';
+import 'package:whatsapp/Components/chatPage/contact_card.dart';
+import 'package:whatsapp/Screens/chatPage/new_group.dart';
 import 'package:whatsapp/models/chat_Model.dart';
-import 'package:whatsapp/pages/new_group.dart';
 
 class SelectContact extends StatefulWidget {
   const SelectContact({Key? key}) : super(key: key);

@@ -2,7 +2,7 @@
 import 'dart:async';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'package:whatsapp/Screens/camera_screen.dart';
+import 'package:whatsapp/Screens/cameraPage/camera_screen.dart';
 import 'package:whatsapp/pages/homepage.dart';
 
 Future<void> main() async {
