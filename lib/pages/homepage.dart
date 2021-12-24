@@ -1,15 +1,19 @@
 // ignore_for_file: file_names, prefer_const_constructors, prefer_const_literals_to_create_immutables, avoid_print
 
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:whatsapp/Screens/user/setting_screen.dart';
 import 'package:whatsapp/pages/calls_page.dart';
 import 'package:whatsapp/pages/camera_page.dart';
 import 'package:whatsapp/pages/chatpage.dart';
 import 'package:whatsapp/pages/status_page.dart';
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key, required this.title}) : super(key: key);
+  const MyHomePage({Key? key, required this.title, required this.prefs})
+      : super(key: key);
 
   final String title;
+  final SharedPreferences prefs;
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -68,6 +72,12 @@ class _MyHomePageState extends State<MyHomePage>
               },
               onSelected: (value) {
                 print(value);
+                if (value == "Settings") {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (builder) => SettingsScreen()));
+                }
               },
               elevation: 5.0,
             ),

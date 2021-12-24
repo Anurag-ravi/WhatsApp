@@ -2,20 +2,23 @@
 import 'dart:async';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:whatsapp/Screens/InitialSceens/landing_screen.dart';
 import 'package:whatsapp/Screens/cameraPage/camera_screen.dart';
 import 'package:whatsapp/pages/homepage.dart';
 
+late SharedPreferences prefs;
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   cameras = await availableCameras();
+  prefs = await SharedPreferences.getInstance();
 
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -27,9 +30,12 @@ class MyApp extends StatelessWidget {
             primary: const Color(0xff075e54)),
       ),
       debugShowCheckedModeBanner: false,
-      home: MyHomePage(
-        title: 'WhatsApp',
-      ),
+      home: prefs.getString('fullNumber') == null
+          ? LandingScreen()
+          : MyHomePage(
+              title: "WhatsApp Clone",
+              prefs: prefs,
+            ),
     );
   }
 }

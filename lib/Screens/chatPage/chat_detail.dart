@@ -6,6 +6,7 @@ import 'package:whatsapp/Components/chatPage/our_message.dart';
 import 'package:whatsapp/Components/chatPage/their_message.dart';
 import 'package:whatsapp/models/chat_Model.dart';
 import 'package:emoji_picker/emoji_picker.dart';
+import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 class ChatDetail extends StatefulWidget {
   const ChatDetail({
@@ -23,6 +24,7 @@ class _ChatDetailState extends State<ChatDetail> {
   bool show = false;
   FocusNode focusnode = FocusNode();
   TextEditingController _controller = TextEditingController();
+  late IO.Socket socket;
 
   @override
   void initState() {

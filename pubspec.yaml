@@ -35,11 +35,13 @@ dependencies:
   cupertino_icons: ^1.0.2
   flutter_svg: ^1.0.0
   emoji_picker: ^0.1.0
-  shared_preferences: ^0.5.12+4
+  shared_preferences: ^0.5.7+3
   camera: ^0.9.1+1
-  path_provider: ^1.6.28
-  path: ^1.8.0
   video_player: ^2.2.9
+  socket_io_client: ^2.0.0-beta.4-nullsafety.0
+  intl_phone_field: ^1.2.0
+  otp_text_field: ^1.1.1
+  http: ^0.13.4
 
 dev_dependencies:
   flutter_test:
