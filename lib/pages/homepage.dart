@@ -3,10 +3,12 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:whatsapp/Screens/user/setting_screen.dart';
+import 'package:whatsapp/data.dart';
 import 'package:whatsapp/pages/calls_page.dart';
 import 'package:whatsapp/pages/camera_page.dart';
 import 'package:whatsapp/pages/chatpage.dart';
 import 'package:whatsapp/pages/status_page.dart';
+import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({Key? key, required this.title, required this.prefs})
@@ -22,6 +24,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage>
     with SingleTickerProviderStateMixin {
   TabController? _tabController;
+  late IO.Socket socket;
 
   @override
   void initState() {
@@ -29,7 +32,27 @@ class _MyHomePageState extends State<MyHomePage>
       ..addListener(() {
         setState(() {});
       });
+      connect();
     super.initState();
+  }
+
+  void connect() async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    socket = IO.io(url,<String,dynamic>{
+      "transports":["websocket"],
+      "autoConnect":false,
+    });
+    socket.connect();
+    socket.onConnect((_) {
+      print("===connected===");
+      socket.emit("join",prefs.getString('fullNumber'));
+    });
+    setState(() {
+      
+    });
+      socket.on('reply', (data) => print(data));
+      socket.onDisconnect((_) => print('disconnect'));
+      // socket.on('fromServer', (_) => print(_));
   }
 
   @override
@@ -111,7 +134,7 @@ class _MyHomePageState extends State<MyHomePage>
           children: [
             // CameraPage(cameras: widget.cameras),
             CameraPage(),
-            ChatPage(),
+            ChatPage(socket: socket,),
             StatusPage(),
             CallsPage(),
           ],

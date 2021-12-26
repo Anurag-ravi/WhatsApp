@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:whatsapp/Components/chatPage/our_message.dart';
 import 'package:whatsapp/Components/chatPage/their_message.dart';
 import 'package:whatsapp/models/chat_Model.dart';
@@ -12,9 +13,11 @@ class ChatDetail extends StatefulWidget {
   const ChatDetail({
     Key? key,
     required this.chatmodel,
+    required this.socket,
   }) : super(key: key);
 
   final ChatModel chatmodel;
+  final IO.Socket socket;
 
   @override
   _ChatDetailState createState() => _ChatDetailState();
@@ -22,9 +25,10 @@ class ChatDetail extends StatefulWidget {
 
 class _ChatDetailState extends State<ChatDetail> {
   bool show = false;
+  bool icon = false;
   FocusNode focusnode = FocusNode();
   TextEditingController _controller = TextEditingController();
-  late IO.Socket socket;
+  late SharedPreferences prefs;
 
   @override
   void initState() {
@@ -37,6 +41,10 @@ class _ChatDetailState extends State<ChatDetail> {
         });
       }
     });
+    init();
+  }
+  void init() async {
+    prefs = await SharedPreferences.getInstance();
   }
 
   @override
@@ -235,6 +243,17 @@ class _ChatDetailState extends State<ChatDetail> {
                                   child: TextFormField(
                                     controller: _controller,
                                     focusNode: focusnode,
+                                    onChanged: (text){
+                                        if(text.isNotEmpty){
+                                          setState(() {
+                                            icon=true;
+                                          });
+                                        } else {
+                                          setState(() {
+                                            icon=false;
+                                          });
+                                        }
+                                    },
                                     textAlignVertical: TextAlignVertical.center,
                                     keyboardType: TextInputType.multiline,
                                     maxLines: 5,
@@ -253,7 +272,7 @@ class _ChatDetailState extends State<ChatDetail> {
                                             });
                                           },
                                         ),
-                                        suffixIcon: Row(
+                                        suffixIcon: icon ? null : Row(
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
                                             IconButton(
@@ -289,8 +308,12 @@ class _ChatDetailState extends State<ChatDetail> {
                                   backgroundColor:
                                       Theme.of(context).colorScheme.primary,
                                   child: IconButton(
-                                    icon: Icon(Icons.mic),
-                                    onPressed: () {},
+                                    icon: Icon(icon ? Icons.send_rounded:Icons.mic),
+                                    onPressed: () {
+                                      if(icon){
+                                        sendMessage();
+                                      }
+                                    },
                                   ),
                                 ),
                               ),
@@ -404,5 +427,13 @@ class _ChatDetailState extends State<ChatDetail> {
         onEmojiSelected: (emoji, category) {
           _controller.text += emoji.emoji;
         });
+  }
+  void sendMessage(){
+    widget.socket.emit("message",{
+      "message":_controller.text,
+      "from":prefs.getString('fullNumber'),
+      "to":widget.chatmodel.name
+      });
+      _controller.text = '';
   }
 }

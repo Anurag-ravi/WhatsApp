@@ -1,5 +1,6 @@
 // ignore_for_file: prefer_const_constructors
 
+
 import 'package:contacts_service/contacts_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -54,7 +55,7 @@ class NewContactCard extends StatelessWidget {
         ),
       ),
       subtitle: Text(
-        contact.phones![0].toString(),
+        contact.phones != null ? contact.phones![0].value.toString() :'',
         style: TextStyle(
           color: Colors.grey,
           fontSize: width * 0.035,

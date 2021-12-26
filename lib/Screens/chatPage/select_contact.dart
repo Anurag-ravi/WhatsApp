@@ -1,12 +1,11 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 
+import 'package:contacts_service/contacts_service.dart';
 import 'package:flutter/material.dart';
 import 'package:whatsapp/Components/chatPage/button_card.dart';
-import 'package:whatsapp/Components/chatPage/contact_card.dart';
 import 'package:whatsapp/Components/chatPage/new_contact_card.dart';
 import 'package:whatsapp/Screens/chatPage/new_group.dart';
-import 'package:whatsapp/models/chat_Model.dart';
-import 'package:contacts_service/contacts_service.dart';
+
 
 class SelectContact extends StatefulWidget {
   const SelectContact({Key? key}) : super(key: key);
@@ -22,16 +21,17 @@ class _SelectContactState extends State<SelectContact> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    // getcontacts();
+    getcontacts();
   }
 
   Future<void> getcontacts() async {
-    List<Contact> _contacts =
-        (await ContactsService.getContacts(withThumbnails: false));
-    setState(() {
-      contacts = _contacts;
-    });
+      List<Contact> _contacts = await ContactsService.getContacts();
+        setState(() {
+          contacts=_contacts;
+        });
   }
+
+  
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +45,7 @@ class _SelectContactState extends State<SelectContact> {
                 style: TextStyle(fontSize: 19, fontWeight: FontWeight.w500),
               ),
               Text(
-                "268 contacts",
+                "${contacts.length} contacts",
                 style: TextStyle(
                   fontSize: 13,
                 ),
@@ -82,7 +82,7 @@ class _SelectContactState extends State<SelectContact> {
             ),
           ],
         ),
-        body: ListView.builder(
+        body: contacts.length > 0 ? ListView.builder(
           itemCount: contacts.length + 2,
           itemBuilder: (context, index) {
             if (index == 0) {
@@ -102,9 +102,13 @@ class _SelectContactState extends State<SelectContact> {
                 name: "New contact",
               );
             } else {
-              return NewContactCard(contact: contacts[index - 2]);
+              return NewContactCard(contact: contacts[index-2]);
+              // return Container();
             }
           },
-        ));
+        ) : Center(
+          child: CircularProgressIndicator(),
+        ),
+        );
   }
 }

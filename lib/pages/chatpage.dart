@@ -2,11 +2,14 @@
 
 import 'package:flutter/material.dart';
 import 'package:whatsapp/Components/chatPage/chat_card.dart';
+import 'package:whatsapp/Screens/chatPage/chat_detail.dart';
 import 'package:whatsapp/Screens/chatPage/select_contact.dart';
 import 'package:whatsapp/models/chat_Model.dart';
+import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 class ChatPage extends StatefulWidget {
-  const ChatPage({Key? key}) : super(key: key);
+  const ChatPage({Key? key,required this.socket}) : super(key: key);
+  final IO.Socket socket;
 
   @override
   _ChatPageState createState() => _ChatPageState();
@@ -20,68 +23,19 @@ class _ChatPageState extends State<ChatPage> {
         itemCount: chatdata.length,
         itemBuilder: (context, index) => Column(
           children: [
-            // ListTile(
-            //   leading: Hero(
-            //     tag: chatdata[index].id,
-            //     child: CircleAvatar(
-            //       backgroundColor: Colors.blue,
-            //       backgroundImage: AssetImage(chatdata[index].avatar),
-            //       radius: width * 0.075,
-            //     ),
-            //   ),
-            //   title: Text(
-            //     chatdata[index].name,
-            //     style: TextStyle(
-            //       fontWeight: FontWeight.w600,
-            //       fontSize: width * 0.045,
-            //     ),
-            //   ),
-            //   subtitle: Text(
-            //     chatdata[index].message,
-            //     style: TextStyle(
-            //       color: Colors.grey,
-            //       fontSize: width * 0.035,
-            //     ),
-            //   ),
-            //   trailing: Column(
-            //     mainAxisAlignment: MainAxisAlignment.center,
-            //     children: [
-            //       Text(
-            //         chatdata[index].time,
-            //         style: TextStyle(
-            //           color: Colors.black87,
-            //           fontSize: width * 0.035,
-            //         ),
-            //       ),
-            //       SizedBox(
-            //         height: width * 0.025,
-            //       ),
-            //       Flexible(
-            //         child: CircleAvatar(
-            //           radius: width * 0.028,
-            //           backgroundColor: Theme.of(context).colorScheme.secondary,
-            //           child: Text(
-            //             '4',
-            //             style: TextStyle(
-            //                 color: Colors.white, fontSize: width * 0.04),
-            //           ),
-            //         ),
-            //       )
-            //     ],
-            //   ),
-            //   onTap: () {
-            //     Navigator.push(
-            //         context,
-            //         MaterialPageRoute(
-            //             builder: (context) => ChatDetail(
-            //                   tag: chatdata[index].id,
-            //                   img: chatdata[index].avatar,
-            //                   name: chatdata[index].name,
-            //                 )));
-            //   },
-            // ),
-            Chatcard(
-              chatmodel: chatdata[index],
+            InkWell(
+              child: Chatcard(
+                chatmodel: chatdata[index],
+              ),
+              onTap: (){
+                Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => ChatDetail(
+                      chatmodel: chatdata[index],
+                      socket: widget.socket,
+                    )));
+              },
             ),
             SizedBox(
               height: 5,
