@@ -3,8 +3,10 @@
 import 'package:flutter/material.dart';
 import 'package:whatsapp/Components/chatPage/button_card.dart';
 import 'package:whatsapp/Components/chatPage/contact_card.dart';
+import 'package:whatsapp/Components/chatPage/new_contact_card.dart';
 import 'package:whatsapp/Screens/chatPage/new_group.dart';
 import 'package:whatsapp/models/chat_Model.dart';
+import 'package:contacts_service/contacts_service.dart';
 
 class SelectContact extends StatefulWidget {
   const SelectContact({Key? key}) : super(key: key);
@@ -14,6 +16,23 @@ class SelectContact extends StatefulWidget {
 }
 
 class _SelectContactState extends State<SelectContact> {
+  List<Contact> contacts = [];
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    // getcontacts();
+  }
+
+  Future<void> getcontacts() async {
+    List<Contact> _contacts =
+        (await ContactsService.getContacts(withThumbnails: false));
+    setState(() {
+      contacts = _contacts;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -64,7 +83,7 @@ class _SelectContactState extends State<SelectContact> {
           ],
         ),
         body: ListView.builder(
-          itemCount: chatdata.length + 2,
+          itemCount: contacts.length + 2,
           itemBuilder: (context, index) {
             if (index == 0) {
               return InkWell(
@@ -83,7 +102,7 @@ class _SelectContactState extends State<SelectContact> {
                 name: "New contact",
               );
             } else {
-              return ContactCard(chatmodel: chatdata[index - 2]);
+              return NewContactCard(contact: contacts[index - 2]);
             }
           },
         ));
