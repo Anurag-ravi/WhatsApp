@@ -1,14 +1,14 @@
 // ignore_for_file: prefer_const_constructors
 
-
 import 'package:contacts_service/contacts_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:whatsapp/models/contactmodel.dart';
 
 class NewContactCard extends StatelessWidget {
   const NewContactCard({Key? key, required this.contact}) : super(key: key);
 
-  final Contact contact;
+  final ContactModel contact;
 
   @override
   Widget build(BuildContext context) {
@@ -48,14 +48,14 @@ class NewContactCard extends StatelessWidget {
         ),
       ),
       title: Text(
-        contact.displayName.toString(),
+        contact.name,
         style: TextStyle(
           fontWeight: FontWeight.w600,
           fontSize: width * 0.045,
         ),
       ),
       subtitle: Text(
-        contact.phones != null ? contact.phones![0].value.toString() :'',
+        contact.status,
         style: TextStyle(
           color: Colors.grey,
           fontSize: width * 0.035,
