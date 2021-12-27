@@ -4,6 +4,7 @@ import 'dart:convert';
 
 import 'package:contacts_service/contacts_service.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:whatsapp/Components/chatPage/button_card.dart';
 import 'package:whatsapp/Components/chatPage/new_contact_card.dart';
 import 'package:whatsapp/Screens/chatPage/new_group.dart';
@@ -31,6 +32,7 @@ class _SelectContactState extends State<SelectContact> {
 
   Future<void> getcontacts() async {
     List<Contact> _contacts = await ContactsService.getContacts();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
     final response = await http.get(
       Uri.parse("${url}users/all"),
       headers: {
@@ -46,16 +48,23 @@ class _SelectContactState extends State<SelectContact> {
           .toList();
     }
     List<ContactModel> _contacts2 = [];
+    List<String> numbers = [];
     list.forEach((listitem) {
       _contacts.forEach((contact) {
         if (contact.phones != null) {
           contact.phones!.forEach((element) {
             var phonestr = element.value.toString();
             if (listitem.number.contains(flattenphone(phonestr))) {
-              _contacts2.add(ContactModel(
+              var ele = ContactModel(
                   number: phonestr,
                   name: contact.displayName.toString(),
-                  status: listitem.status));
+                  status: listitem.status);
+              if (numbers.contains(listitem.number) ||
+                  prefs.getString('fullNumber') == listitem.number) {
+              } else {
+                _contacts2.add(ele);
+                numbers.add(listitem.number);
+              }
             }
           });
         }
