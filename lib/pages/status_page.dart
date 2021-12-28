@@ -5,7 +5,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:whatsapp/Components/StatusPage/other_status_card.dart';
 import 'package:whatsapp/Components/StatusPage/own_status_card.dart';
-import 'package:whatsapp/models/chat_Model.dart';
+import 'package:whatsapp/models/chat.dart';
 
 class StatusPage extends StatefulWidget {
   const StatusPage({Key? key}) : super(key: key);
@@ -66,36 +66,36 @@ class _StatusPageState extends State<StatusPage> {
                 ),
               ),
             ),
-            OtherStatus(
-              viewed: false,
-              chatmodel: chatdata[1],
-              statusNum: 1,
-            ),
-            OtherStatus(
-              viewed: false,
-              chatmodel: chatdata[2],
-              statusNum: 3,
-            ),
-            OtherStatus(
-              viewed: false,
-              chatmodel: chatdata[3],
-              statusNum: 2,
-            ),
-            OtherStatus(
-              viewed: false,
-              chatmodel: chatdata[4],
-              statusNum: 5,
-            ),
-            OtherStatus(
-              viewed: false,
-              chatmodel: chatdata[5],
-              statusNum: 4,
-            ),
-            OtherStatus(
-              viewed: false,
-              chatmodel: chatdata[6],
-              statusNum: 7,
-            ),
+            // OtherStatus(
+            //   viewed: false,
+            //   chatmodel: chatdata[1],
+            //   statusNum: 1,
+            // ),
+            // OtherStatus(
+            //   viewed: false,
+            //   chatmodel: chatdata[2],
+            //   statusNum: 3,
+            // ),
+            // OtherStatus(
+            //   viewed: false,
+            //   chatmodel: chatdata[3],
+            //   statusNum: 2,
+            // ),
+            // OtherStatus(
+            //   viewed: false,
+            //   chatmodel: chatdata[4],
+            //   statusNum: 5,
+            // ),
+            // OtherStatus(
+            //   viewed: false,
+            //   chatmodel: chatdata[5],
+            //   statusNum: 4,
+            // ),
+            // OtherStatus(
+            //   viewed: false,
+            //   chatmodel: chatdata[6],
+            //   statusNum: 7,
+            // ),
             Container(
               padding: EdgeInsets.symmetric(horizontal: 10, vertical: 3),
               height: 25,
@@ -109,31 +109,31 @@ class _StatusPageState extends State<StatusPage> {
                 ),
               ),
             ),
-            OtherStatus(
-              viewed: true,
-              chatmodel: chatdata[7],
-              statusNum: 2,
-            ),
-            OtherStatus(
-              viewed: true,
-              chatmodel: chatdata[9],
-              statusNum: 4,
-            ),
-            OtherStatus(
-              viewed: true,
-              chatmodel: chatdata[10],
-              statusNum: 3,
-            ),
-            OtherStatus(
-              viewed: true,
-              chatmodel: chatdata[11],
-              statusNum: 1,
-            ),
-            OtherStatus(
-              viewed: true,
-              chatmodel: chatdata[12],
-              statusNum: 6,
-            ),
+            // OtherStatus(
+            //   viewed: true,
+            //   chatmodel: chatdata[7],
+            //   statusNum: 2,
+            // ),
+            // OtherStatus(
+            //   viewed: true,
+            //   chatmodel: chatdata[9],
+            //   statusNum: 4,
+            // ),
+            // OtherStatus(
+            //   viewed: true,
+            //   chatmodel: chatdata[10],
+            //   statusNum: 3,
+            // ),
+            // OtherStatus(
+            //   viewed: true,
+            //   chatmodel: chatdata[11],
+            //   statusNum: 1,
+            // ),
+            // OtherStatus(
+            //   viewed: true,
+            //   chatmodel: chatdata[12],
+            //   statusNum: 6,
+            // ),
           ],
         ),
       ),

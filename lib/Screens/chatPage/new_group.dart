@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:whatsapp/Components/chatPage/contact_card.dart';
 import 'package:whatsapp/Components/chatPage/group_card.dart';
-import 'package:whatsapp/models/chat_Model.dart';
+import 'package:whatsapp/models/chat.dart';
 
 class NewGroup extends StatefulWidget {
   const NewGroup({Key? key}) : super(key: key);
@@ -19,10 +19,10 @@ class _NewGroupState extends State<NewGroup> {
   @override
   void initState() {
     // TODO: implement initState
-    chatData = chatdata;
-    setState(() {
-      chatData = chatdata;
-    });
+    // chatData = chatdata;
+    // setState(() {
+    //   chatData = chatdata;
+    // });
     super.initState();
   }
 
@@ -79,30 +79,30 @@ class _NewGroupState extends State<NewGroup> {
       ),
       body: Stack(
         children: [
-          ListView.builder(
-            padding: groupMembers.length > 0
-                ? EdgeInsets.only(top: 80)
-                : EdgeInsets.all(0),
-            itemCount: chatData.length,
-            itemBuilder: (context, index) {
-              return InkWell(
-                child: ContactCard(chatmodel: chatData[index]),
-                onTap: () {
-                  if (chatData[index].select == false) {
-                    setState(() {
-                      chatData[index].select = true;
-                      groupMembers.add(chatData[index]);
-                    });
-                  } else {
-                    setState(() {
-                      chatData[index].select = false;
-                      groupMembers.remove(chatData[index]);
-                    });
-                  }
-                },
-              );
-            },
-          ),
+          // ListView.builder(
+          //   padding: groupMembers.length > 0
+          //       ? EdgeInsets.only(top: 80)
+          //       : EdgeInsets.all(0),
+          //   itemCount: chatData.length,
+          //   itemBuilder: (context, index) {
+          //     return InkWell(
+          //       child: ContactCard(chatmodel: chatData[index]),
+          //       onTap: () {
+          //         if (chatData[index].select == false) {
+          //           setState(() {
+          //             chatData[index].select = true;
+          //             groupMembers.add(chatData[index]);
+          //           });
+          //         } else {
+          //           setState(() {
+          //             chatData[index].select = false;
+          //             groupMembers.remove(chatData[index]);
+          //           });
+          //         }
+          //       },
+          //     );
+          //   },
+          // ),
           groupMembers.length > 0
               ? Column(
                   children: [
@@ -113,19 +113,19 @@ class _NewGroupState extends State<NewGroup> {
                         itemCount: chatData.length,
                         scrollDirection: Axis.horizontal,
                         itemBuilder: (context, index) {
-                          return chatData[index].select
-                              ? InkWell(
-                                  child: AvatarGroup(
-                                    chatmodel: chatData[index],
-                                  ),
-                                  onTap: () {
-                                    setState(() {
-                                      groupMembers.remove(chatData[index]);
-                                      chatData[index].select = false;
-                                    });
-                                  },
-                                )
-                              : Container();
+                          // return chatData[index].select
+                          //     ? InkWell(
+                          //         child: AvatarGroup(
+                          //           chatmodel: chatData[index],
+                          //         ),
+                          //         onTap: () {
+                          //           setState(() {
+                          //             groupMembers.remove(chatData[index]);
+                          //             chatData[index].select = false;
+                          //           });
+                          //         },
+                          //       )
+                          return Container();
                         },
                       ),
                     ),

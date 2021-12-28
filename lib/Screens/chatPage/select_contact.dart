@@ -1,19 +1,24 @@
-// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
+// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, avoid_print
 
 import 'dart:convert';
 
 import 'package:contacts_service/contacts_service.dart';
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:whatsapp/Components/chatPage/button_card.dart';
 import 'package:whatsapp/Components/chatPage/new_contact_card.dart';
+import 'package:whatsapp/Screens/chatPage/chat_detail.dart';
 import 'package:whatsapp/Screens/chatPage/new_group.dart';
 import 'package:http/http.dart' as http;
 import 'package:whatsapp/data.dart';
+import 'package:whatsapp/models/chat.dart';
 import 'package:whatsapp/models/contactmodel.dart';
+import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 class SelectContact extends StatefulWidget {
-  const SelectContact({Key? key}) : super(key: key);
+  const SelectContact({Key? key, required this.socket}) : super(key: key);
+  final IO.Socket socket;
 
   @override
   _SelectContactState createState() => _SelectContactState();
@@ -22,15 +27,40 @@ class SelectContact extends StatefulWidget {
 class _SelectContactState extends State<SelectContact> {
   List<ContactModel> contacts = [];
   bool loading = true;
+  late Box<ContactModel> contactBox;
+  late Box<ChatModel> chatBox;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    getcontacts();
+    getContacts();
   }
 
-  Future<void> getcontacts() async {
+  void getContacts() async {
+    final box = Hive.box<ContactModel>('contacts');
+    List<ContactModel> temp = box.values.toList();
+    temp.sort((a, b) {
+      return a.name
+          .toString()
+          .toLowerCase()
+          .compareTo(b.name.toString().toLowerCase());
+    });
+    setState(() {
+      contacts = temp;
+      loading = false;
+      contactBox = box;
+    });
+    final box1 = Hive.box<ChatModel>('chats');
+    setState(() {
+      chatBox = box1;
+    });
+  }
+
+  Future<void> refreshcontacts() async {
+    setState(() {
+      loading = true;
+    });
     List<Contact> _contacts = await ContactsService.getContacts();
     SharedPreferences prefs = await SharedPreferences.getInstance();
     final response = await http.get(
@@ -56,7 +86,7 @@ class _SelectContactState extends State<SelectContact> {
             var phonestr = element.value.toString();
             if (listitem.number.contains(flattenphone(phonestr))) {
               var ele = ContactModel(
-                  number: phonestr,
+                  number: listitem.number,
                   name: contact.displayName.toString(),
                   status: listitem.status);
               if (numbers.contains(listitem.number) ||
@@ -69,6 +99,15 @@ class _SelectContactState extends State<SelectContact> {
           });
         }
       });
+    });
+    _contacts2.forEach((contact) async {
+      await contactBox.put(contact.number, contact);
+    });
+    _contacts2.sort((a, b) {
+      return a.name
+          .toString()
+          .toLowerCase()
+          .compareTo(b.name.toString().toLowerCase());
     });
     setState(() {
       contacts = _contacts2;
@@ -124,41 +163,78 @@ class _SelectContactState extends State<SelectContact> {
               ];
             },
             onSelected: (value) {
-              print(value);
+              if (value == "Refresh") {
+                refreshcontacts();
+              }
             },
             elevation: 5.0,
           ),
         ],
       ),
-      body: !loading
-          ? ListView.builder(
-              itemCount: contacts.length + 2,
-              itemBuilder: (context, index) {
-                if (index == 0) {
-                  return InkWell(
-                    onTap: () {
-                      Navigator.push(context,
-                          MaterialPageRoute(builder: (builder) => NewGroup()));
-                    },
-                    child: ButtonCard(
-                      icon: Icons.group,
-                      name: "New group",
-                    ),
-                  );
-                } else if (index == 1) {
-                  return ButtonCard(
-                    icon: Icons.person_add,
-                    name: "New contact",
-                  );
-                } else {
-                  return NewContactCard(contact: contacts[index - 2]);
-                  // return Container();
-                }
-              },
-            )
-          : Center(
+      body: loading
+          ? Center(
               child: CircularProgressIndicator(),
-            ),
+            )
+          : contacts.length == 0
+              ? Center(
+                  child: Text(
+                      "No Contacts Available, please refresh or invite your friends to the app"),
+                )
+              : ListView.builder(
+                  itemCount: contacts.length + 2,
+                  itemBuilder: (context, index) {
+                    if (index == 0) {
+                      return InkWell(
+                        onTap: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (builder) => NewGroup()));
+                        },
+                        child: ButtonCard(
+                          icon: Icons.group,
+                          name: "New group",
+                        ),
+                      );
+                    } else if (index == 1) {
+                      return ButtonCard(
+                        icon: Icons.person_add,
+                        name: "New contact",
+                      );
+                    } else {
+                      return InkWell(
+                        child: NewContactCard(contact: contacts[index - 2]),
+                        onTap: () {
+                          ChatModel obj = (chatBox
+                              .get(contacts[index - 2].number)) as ChatModel;
+                          if (obj != null) {
+                          } else {
+                            DateTime now = DateTime.now();
+                            chatBox.put(
+                                contacts[index - 2].number,
+                                ChatModel(
+                                    number: contacts[index - 2].number,
+                                    name: contacts[index - 2].name,
+                                    lastmessage: '',
+                                    status: contacts[index - 2].status,
+                                    epoch: now.millisecondsSinceEpoch,
+                                    time: '${now.hour}:${now.minute}'));
+                          }
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => ChatDetail(
+                                        chatmodel: (chatBox.get(
+                                                contacts[index - 2].number))
+                                            as ChatModel,
+                                        socket: widget.socket,
+                                      )));
+                        },
+                      );
+                      // return Container();
+                    }
+                  },
+                ),
     );
   }
 }

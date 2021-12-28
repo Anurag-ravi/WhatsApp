@@ -1,10 +1,15 @@
 // ignore_for_file: prefer_const_constructors
 import 'dart:async';
+
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import 'package:whatsapp/Screens/InitialSceens/landing_screen.dart';
 import 'package:whatsapp/Screens/cameraPage/camera_screen.dart';
+import 'package:whatsapp/models/chat.dart';
+import 'package:whatsapp/models/contactmodel.dart';
 import 'package:whatsapp/pages/homepage.dart';
 
 late SharedPreferences prefs;
@@ -13,6 +18,12 @@ Future<void> main() async {
 
   cameras = await availableCameras();
   prefs = await SharedPreferences.getInstance();
+  Hive.registerAdapter(ContactModelAdapter());
+  Hive.registerAdapter(ChatModelAdapter());
+  await Hive.initFlutter();
+
+  await Hive.openBox<ContactModel>('contacts');
+  await Hive.openBox<ChatModel>('chats');
 
   runApp(const MyApp());
 }

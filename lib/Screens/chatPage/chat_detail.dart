@@ -5,7 +5,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:whatsapp/Components/chatPage/our_message.dart';
 import 'package:whatsapp/Components/chatPage/their_message.dart';
-import 'package:whatsapp/models/chat_Model.dart';
+import 'package:whatsapp/models/chat.dart';
 import 'package:emoji_picker/emoji_picker.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 
@@ -43,6 +43,7 @@ class _ChatDetailState extends State<ChatDetail> {
     });
     init();
   }
+
   void init() async {
     prefs = await SharedPreferences.getInstance();
   }
@@ -75,22 +76,15 @@ class _ChatDetailState extends State<ChatDetail> {
                   width: 7,
                 ),
                 Hero(
-                  tag: widget.chatmodel.id,
+                  tag: widget.chatmodel.number,
                   child: CircleAvatar(
                     backgroundColor: Color(0xffc0c0c0),
-                    child: widget.chatmodel.avatar == ''
-                        ? SvgPicture.asset(
-                            widget.chatmodel.isGroup
-                                ? "images/groups.svg"
-                                : "images/person.svg",
-                            color: Colors.white,
-                            width: 35,
-                            height: 35,
-                          )
-                        : null,
-                    backgroundImage: widget.chatmodel.avatar != ''
-                        ? AssetImage(widget.chatmodel.avatar)
-                        : null,
+                    child: SvgPicture.asset(
+                      "images/person.svg",
+                      color: Colors.white,
+                      width: 35,
+                      height: 35,
+                    ),
                     radius: 23,
                   ),
                 ),
@@ -243,16 +237,16 @@ class _ChatDetailState extends State<ChatDetail> {
                                   child: TextFormField(
                                     controller: _controller,
                                     focusNode: focusnode,
-                                    onChanged: (text){
-                                        if(text.isNotEmpty){
-                                          setState(() {
-                                            icon=true;
-                                          });
-                                        } else {
-                                          setState(() {
-                                            icon=false;
-                                          });
-                                        }
+                                    onChanged: (text) {
+                                      if (text.isNotEmpty) {
+                                        setState(() {
+                                          icon = true;
+                                        });
+                                      } else {
+                                        setState(() {
+                                          icon = false;
+                                        });
+                                      }
                                     },
                                     textAlignVertical: TextAlignVertical.center,
                                     keyboardType: TextInputType.multiline,
@@ -272,30 +266,34 @@ class _ChatDetailState extends State<ChatDetail> {
                                             });
                                           },
                                         ),
-                                        suffixIcon: icon ? null : Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            IconButton(
-                                              icon: Icon(
-                                                  Icons.attach_file_outlined),
-                                              onPressed: () {
-                                                setState(() {
-                                                  show = false;
-                                                });
-                                                showModalBottomSheet(
-                                                    backgroundColor:
-                                                        Colors.transparent,
-                                                    context: context,
-                                                    builder: (builder) =>
-                                                        bottomPop());
-                                              },
-                                            ),
-                                            IconButton(
-                                              icon: Icon(Icons.camera_alt),
-                                              onPressed: () {},
-                                            ),
-                                          ],
-                                        ),
+                                        suffixIcon: icon
+                                            ? null
+                                            : Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  IconButton(
+                                                    icon: Icon(Icons
+                                                        .attach_file_outlined),
+                                                    onPressed: () {
+                                                      setState(() {
+                                                        show = false;
+                                                      });
+                                                      showModalBottomSheet(
+                                                          backgroundColor:
+                                                              Colors
+                                                                  .transparent,
+                                                          context: context,
+                                                          builder: (builder) =>
+                                                              bottomPop());
+                                                    },
+                                                  ),
+                                                  IconButton(
+                                                    icon:
+                                                        Icon(Icons.camera_alt),
+                                                    onPressed: () {},
+                                                  ),
+                                                ],
+                                              ),
                                         contentPadding: EdgeInsets.only(
                                             top: 5, bottom: 5, left: 10)),
                                   ),
@@ -308,9 +306,10 @@ class _ChatDetailState extends State<ChatDetail> {
                                   backgroundColor:
                                       Theme.of(context).colorScheme.primary,
                                   child: IconButton(
-                                    icon: Icon(icon ? Icons.send_rounded:Icons.mic),
+                                    icon: Icon(
+                                        icon ? Icons.send_rounded : Icons.mic),
                                     onPressed: () {
-                                      if(icon){
+                                      if (icon) {
                                         sendMessage();
                                       }
                                     },
@@ -428,12 +427,13 @@ class _ChatDetailState extends State<ChatDetail> {
           _controller.text += emoji.emoji;
         });
   }
-  void sendMessage(){
-    widget.socket.emit("message",{
-      "message":_controller.text,
-      "from":prefs.getString('fullNumber'),
-      "to":widget.chatmodel.name
-      });
-      _controller.text = '';
+
+  void sendMessage() {
+    widget.socket.emit("message", {
+      "message": _controller.text,
+      "from": prefs.getString('fullNumber'),
+      "to": widget.chatmodel.name
+    });
+    _controller.text = '';
   }
 }

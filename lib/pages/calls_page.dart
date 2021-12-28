@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:whatsapp/models/chat_Model.dart';
+import 'package:whatsapp/models/chat.dart';
 
 class CallsPage extends StatefulWidget {
   const CallsPage({Key? key}) : super(key: key);
@@ -17,17 +17,17 @@ class _CallsPageState extends State<CallsPage> {
     return Scaffold(
       body: ListView(
         children: [
-          callCard(chatdata[0], true, 2),
-          callCard(chatdata[1], false, 1),
-          callCard(chatdata[2], false, 3),
-          callCard(chatdata[3], true, 1),
-          callCard(chatdata[4], true, 1),
-          callCard(chatdata[5], false, 2),
-          callCard(chatdata[6], false, 3),
-          callCard(chatdata[7], true, 3),
-          callCard(chatdata[11], true, 2),
-          callCard(chatdata[9], false, 1),
-          callCard(chatdata[12], false, 3),
+          // callCard(chatdata[0], true, 2),
+          // callCard(chatdata[1], false, 1),
+          // callCard(chatdata[2], false, 3),
+          // callCard(chatdata[3], true, 1),
+          // callCard(chatdata[4], true, 1),
+          // callCard(chatdata[5], false, 2),
+          // callCard(chatdata[6], false, 3),
+          // callCard(chatdata[7], true, 3),
+          // callCard(chatdata[11], true, 2),
+          // callCard(chatdata[9], false, 1),
+          // callCard(chatdata[12], false, 3),
         ],
       ),
       floatingActionButton: FloatingActionButton(
@@ -42,21 +42,15 @@ class _CallsPageState extends State<CallsPage> {
     double width = MediaQuery.of(context).size.width;
     return ListTile(
         leading: Hero(
-          tag: chatmodel.id,
+          tag: chatmodel.number,
           child: CircleAvatar(
             backgroundColor: Color(0xffc0c0c0),
-            child: chatmodel.avatar == ''
-                ? SvgPicture.asset(
-                    chatmodel.isGroup
-                        ? "images/groups.svg"
-                        : "images/person.svg",
-                    color: Colors.white,
-                    width: 35,
-                    height: 35,
-                  )
-                : null,
-            backgroundImage:
-                chatmodel.avatar != '' ? AssetImage(chatmodel.avatar) : null,
+            child: SvgPicture.asset(
+              "images/person.svg",
+              color: Colors.white,
+              width: 35,
+              height: 35,
+            ),
             radius: 25,
           ),
         ),

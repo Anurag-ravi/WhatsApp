@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:whatsapp/models/chat_Model.dart';
+import 'package:whatsapp/models/chat.dart';
 
 class AvatarGroup extends StatelessWidget {
   const AvatarGroup({Key? key, required this.chatmodel}) : super(key: key);
@@ -19,19 +19,12 @@ class AvatarGroup extends StatelessWidget {
             children: [
               CircleAvatar(
                 backgroundColor: Color(0xffc0c0c0),
-                child: chatmodel.avatar == ''
-                    ? SvgPicture.asset(
-                        chatmodel.isGroup
-                            ? "images/groups.svg"
-                            : "images/person.svg",
-                        color: Colors.white,
-                        width: 35,
-                        height: 35,
-                      )
-                    : null,
-                backgroundImage: chatmodel.avatar != ''
-                    ? AssetImage(chatmodel.avatar)
-                    : null,
+                child: SvgPicture.asset(
+                  "images/person.svg",
+                  color: Colors.white,
+                  width: 35,
+                  height: 35,
+                ),
                 radius: 25,
               ),
               SizedBox(

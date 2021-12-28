@@ -4,7 +4,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:whatsapp/models/chat_Model.dart';
+import 'package:whatsapp/models/chat.dart';
 
 class OtherStatus extends StatelessWidget {
   const OtherStatus(
@@ -34,18 +34,12 @@ class OtherStatus extends StatelessWidget {
             child: CircleAvatar(
               radius: 25,
               backgroundColor: Color(0xffc0c0c0),
-              child: chatmodel.avatar == ''
-                  ? SvgPicture.asset(
-                      chatmodel.isGroup
-                          ? "images/groups.svg"
-                          : "images/person.svg",
-                      color: Colors.white,
-                      width: 35,
-                      height: 35,
-                    )
-                  : null,
-              backgroundImage:
-                  chatmodel.avatar != '' ? AssetImage(chatmodel.avatar) : null,
+              child: SvgPicture.asset(
+                "images/person.svg",
+                color: Colors.white,
+                width: 35,
+                height: 35,
+              ),
             ),
           ),
           SizedBox(
@@ -95,20 +89,13 @@ class OtherStatus extends StatelessWidget {
           width: 52,
           height: 52,
           child: CircleAvatar(
-            backgroundColor: Color(0xffc0c0c0),
-            child: chatmodel.avatar == ''
-                ? SvgPicture.asset(
-                    chatmodel.isGroup
-                        ? "images/groups.svg"
-                        : "images/person.svg",
-                    color: Colors.white,
-                    width: 35,
-                    height: 35,
-                  )
-                : null,
-            backgroundImage:
-                chatmodel.avatar != '' ? AssetImage(chatmodel.avatar) : null,
-          ),
+              backgroundColor: Color(0xffc0c0c0),
+              child: SvgPicture.asset(
+                "images/person.svg",
+                color: Colors.white,
+                width: 35,
+                height: 35,
+              )),
         ),
       ],
     );
