@@ -26,9 +26,12 @@ class _ChatPageState extends State<ChatPage> {
     // TODO: implement initState
     getChats();
     super.initState();
+    widget.socket.on('reply', (data) async {
+      getChats();
+    });
   }
 
-  void getChats() async {
+  Future<void> getChats() async {
     final box = Hive.box<ChatModel>('chats');
     List<ChatModel> temp = box.values.toList();
     temp.sort((a, b) {
@@ -48,28 +51,32 @@ class _ChatPageState extends State<ChatPage> {
           ? Center(
               child: CircularProgressIndicator(),
             )
-          : ListView.builder(
-              itemCount: chats.length,
-              itemBuilder: (context, index) => Column(
-                children: [
-                  InkWell(
-                    child: Chatcard(
-                      chatmodel: chats[chats.length - 1 - index],
+          : RefreshIndicator(
+              onRefresh: getChats,
+              child: ListView.builder(
+                itemCount: chats.length,
+                itemBuilder: (context, index) => Column(
+                  children: [
+                    InkWell(
+                      child: Chatcard(
+                        chatmodel: chats[chats.length - 1 - index],
+                      ),
+                      onTap: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => ChatDetail(
+                                      chatmodel:
+                                          chats[chats.length - 1 - index],
+                                      socket: widget.socket,
+                                    ))).then((value) => getChats());
+                      },
                     ),
-                    onTap: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => ChatDetail(
-                                    chatmodel: chats[chats.length - 1 - index],
-                                    socket: widget.socket,
-                                  )));
-                    },
-                  ),
-                  SizedBox(
-                    height: 5,
-                  )
-                ],
+                    SizedBox(
+                      height: 5,
+                    )
+                  ],
+                ),
               ),
             ),
       floatingActionButton: FloatingActionButton(

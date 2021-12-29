@@ -1,9 +1,13 @@
 // ignore_for_file: file_names, prefer_const_constructors, prefer_const_literals_to_create_immutables, avoid_print
 
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:whatsapp/Screens/user/setting_screen.dart';
 import 'package:whatsapp/data.dart';
+import 'package:whatsapp/models/chat.dart';
+import 'package:whatsapp/models/contactmodel.dart';
+import 'package:whatsapp/models/message.dart';
 import 'package:whatsapp/pages/calls_page.dart';
 import 'package:whatsapp/pages/camera_page.dart';
 import 'package:whatsapp/pages/chatpage.dart';
@@ -32,27 +36,106 @@ class _MyHomePageState extends State<MyHomePage>
       ..addListener(() {
         setState(() {});
       });
-      connect();
+    connect();
     super.initState();
   }
 
-  void connect() async{
+  void connect() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    socket = IO.io(url,<String,dynamic>{
-      "transports":["websocket"],
-      "autoConnect":false,
+    socket = IO.io(url, <String, dynamic>{
+      "transports": ["websocket"],
+      "autoConnect": false,
     });
     socket.connect();
     socket.onConnect((_) {
       print("===connected===");
-      socket.emit("join",prefs.getString('fullNumber'));
+      socket.emit("join", prefs.getString('fullNumber'));
     });
-    setState(() {
-      
+    setState(() {});
+    socket.on('reply', (data) async {
+      if (Hive.isBoxOpen(data['from'])) {
+      } else {
+        await Hive.openBox<MessageModel>(data['from']);
+      }
+      final box = Hive.box<MessageModel>(data['from']);
+      box.add(MessageModel(
+          message: data['message'], own: false, epoch: data['time']));
+      updateLastMessage(data['message'], data['time'], data['from']);
     });
-      socket.on('reply', (data) => print(data));
-      socket.onDisconnect((_) => print('disconnect'));
-      // socket.on('fromServer', (_) => print(_));
+    socket.onDisconnect((_) => print('===disconnect==='));
+    // socket.on('fromServer', (_) => print(_));
+  }
+
+  void updateLastMessage(String mess, int timee, String from) async {
+    if (Hive.isBoxOpen('chats')) {
+    } else {
+      await Hive.openBox<MessageModel>('chats');
+    }
+    if (Hive.isBoxOpen('contacts')) {
+    } else {
+      await Hive.openBox<ContactModel>('contacts');
+    }
+    final chatBox = Hive.box<ChatModel>('chats');
+    final contactBox = Hive.box<ContactModel>('contacts');
+    ChatModel obj = (chatBox.get(from)) as ChatModel;
+    if (obj != null) {
+      DateTime now = DateTime.fromMillisecondsSinceEpoch(timee);
+      int min = now.minute;
+      String time = "${now.hour}:";
+      if (min < 10) {
+        time += "0${min}";
+      } else {
+        time += "${min}";
+      }
+      chatBox.put(
+          obj.number,
+          ChatModel(
+              number: obj.number,
+              name: obj.name,
+              lastmessage: mess,
+              status: obj.status,
+              epoch: timee,
+              time: time));
+    } else {
+      ContactModel obj = contactBox.get(from) as ContactModel;
+      if (obj != null) {
+        DateTime now = DateTime.fromMillisecondsSinceEpoch(timee);
+        int min = now.minute;
+        String time = "${now.hour}:";
+        if (min < 10) {
+          time += "0${min}";
+        } else {
+          time += "${min}";
+        }
+        chatBox.put(
+            obj.number,
+            ChatModel(
+                number: obj.number,
+                name: obj.name,
+                lastmessage: mess,
+                status: obj.number,
+                epoch: now.millisecondsSinceEpoch,
+                time: time));
+      } else {
+        DateTime now = DateTime.fromMillisecondsSinceEpoch(timee);
+        int min = now.minute;
+        String time = "${now.hour}:";
+        if (min < 10) {
+          time += "0${min}";
+        } else {
+          time += "${min}";
+        }
+        chatBox.put(
+            from,
+            ChatModel(
+                number: from,
+                name: from,
+                lastmessage: mess,
+                status: '',
+                epoch: now.millisecondsSinceEpoch,
+                time: time));
+      }
+    }
   }
 
   @override
@@ -134,7 +217,9 @@ class _MyHomePageState extends State<MyHomePage>
           children: [
             // CameraPage(cameras: widget.cameras),
             CameraPage(),
-            ChatPage(socket: socket,),
+            ChatPage(
+              socket: socket,
+            ),
             StatusPage(),
             CallsPage(),
           ],

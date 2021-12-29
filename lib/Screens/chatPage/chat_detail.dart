@@ -2,12 +2,14 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:whatsapp/Components/chatPage/our_message.dart';
 import 'package:whatsapp/Components/chatPage/their_message.dart';
 import 'package:whatsapp/models/chat.dart';
 import 'package:emoji_picker/emoji_picker.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
+import 'package:whatsapp/models/message.dart';
 
 class ChatDetail extends StatefulWidget {
   const ChatDetail({
@@ -26,14 +28,18 @@ class ChatDetail extends StatefulWidget {
 class _ChatDetailState extends State<ChatDetail> {
   bool show = false;
   bool icon = false;
+  bool loading = true;
   FocusNode focusnode = FocusNode();
   TextEditingController _controller = TextEditingController();
   late SharedPreferences prefs;
+  ScrollController _scrollController = new ScrollController();
+  List<MessageModel> messages = [];
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    // _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
     focusnode.addListener(() {
       if (focusnode.hasFocus) {
         setState(() {
@@ -42,10 +48,41 @@ class _ChatDetailState extends State<ChatDetail> {
       }
     });
     init();
+    getChats();
+    widget.socket.on('reply', (data) async {
+      setState(() {
+        messages.add(MessageModel(
+            message: data['message'], own: false, epoch: data['time']));
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    // Hive.box(widget.chatmodel.number).close();
+    super.dispose();
   }
 
   void init() async {
     prefs = await SharedPreferences.getInstance();
+    await Hive.openBox<MessageModel>(widget.chatmodel.number);
+  }
+
+  Future<void> getChats() async {
+    if (Hive.isBoxOpen(widget.chatmodel.number)) {
+    } else {
+      await Hive.openBox<MessageModel>(widget.chatmodel.number);
+    }
+    final box = Hive.box<MessageModel>(widget.chatmodel.number);
+    List<MessageModel> temp = box.values.toList();
+    temp.sort((a, b) {
+      return a.epoch.compareTo(b.epoch);
+    });
+    setState(() {
+      messages = temp;
+      loading = false;
+    });
   }
 
   @override
@@ -149,75 +186,38 @@ class _ChatDetailState extends State<ChatDetail> {
             height: MediaQuery.of(context).size.height,
             width: MediaQuery.of(context).size.width,
             child: WillPopScope(
-              child: Stack(
+              child: Column(
                 children: [
-                  Container(
-                    height: height - 145,
-                    child: ListView(
-                      children: [
-                        OurMessage(
-                          message: "Hi ${widget.chatmodel.name}....",
-                          time: "18:26",
-                        ),
-                        TheirMessage(
-                          message: "Hi Anurag",
-                          time: "18:27",
-                        ),
-                        OurMessage(
-                          message: "See I made this Whatsapp Clone",
-                          time: "18:28",
-                        ),
-                        OurMessage(
-                          message: "Using Flutter and Dart 😍",
-                          time: "18:28",
-                        ),
-                        TheirMessage(
-                          message: "🔥🔥 wow..",
-                          time: "18:29",
-                        ),
-                        OurMessage(
-                          message: "you liked it?..",
-                          time: "18:30",
-                        ),
-                        TheirMessage(
-                          message: "Yes..",
-                          time: "18:31",
-                        ),
-                        TheirMessage(
-                          message: "Its awesome..😍😎",
-                          time: "18:31",
-                        ),
-                        OurMessage(
-                          message: "😎",
-                          time: "18:32",
-                        ),
-                        OurMessage(
-                          message: "Thank you..😊😊",
-                          time: "18:32",
-                        ),
-                        OurMessage(
-                          message:
-                              "I am willing to add more features in this app..",
-                          time: "18:33",
-                        ),
-                        TheirMessage(
-                          message: "Ohh 😀",
-                          time: "18:34",
-                        ),
-                        TheirMessage(
-                          message: "can you tell me some of the features...",
-                          time: "18:35",
-                        ),
-                        OurMessage(
-                          message: "Khud app chla k dekh le 😂😂",
-                          time: "18:35",
-                        ),
-                        TheirMessage(
-                          message: "😏😏",
-                          time: "18:36",
-                        ),
-                      ],
-                    ),
+                  Expanded(
+                    // height: height - 145,
+                    child: loading
+                        ? Center(
+                            child: CircularProgressIndicator(),
+                          )
+                        : ListView.builder(
+                            controller: _scrollController,
+                            shrinkWrap: true,
+                            reverse: true,
+                            itemCount: messages.length,
+                            itemBuilder: (context, index) {
+                              final MessageModel message =
+                                  messages[messages.length - 1 - index];
+                              var date = DateTime.fromMillisecondsSinceEpoch(
+                                  message.epoch);
+                              int min = date.minute;
+                              String time = "${date.hour}:";
+                              if (min < 10) {
+                                time += "0${min}";
+                              } else {
+                                time += "${min}";
+                              }
+                              if (message.own) {
+                                return OurMessage(
+                                    message: message.message, time: time);
+                              }
+                              return TheirMessage(
+                                  message: message.message, time: time);
+                            }),
                   ),
                   Container(
                     child: Align(
@@ -432,8 +432,46 @@ class _ChatDetailState extends State<ChatDetail> {
     widget.socket.emit("message", {
       "message": _controller.text,
       "from": prefs.getString('fullNumber'),
-      "to": widget.chatmodel.name
+      "time": DateTime.now().millisecondsSinceEpoch,
+      "to": widget.chatmodel.number
     });
+    final box = Hive.box<MessageModel>(widget.chatmodel.number);
+    var mesg = MessageModel(
+        message: _controller.text,
+        own: true,
+        epoch: DateTime.now().millisecondsSinceEpoch);
+    box.add(mesg);
+    setState(() {
+      messages.add(mesg);
+      icon = false;
+    });
+    updateLastMessage(_controller.text, DateTime.now().millisecondsSinceEpoch);
     _controller.text = '';
+  }
+
+  void updateLastMessage(String mess, int timee) async {
+    if (Hive.isBoxOpen('chats')) {
+    } else {
+      await Hive.openBox<MessageModel>('chats');
+    }
+    final chatBox = Hive.box<ChatModel>('chats');
+    ChatModel obj = (chatBox.get(widget.chatmodel.number)) as ChatModel;
+    DateTime now = DateTime.fromMillisecondsSinceEpoch(timee);
+    int min = now.minute;
+    String time = "${now.hour}:";
+    if (min < 10) {
+      time += "0${min}";
+    } else {
+      time += "${min}";
+    }
+    chatBox.put(
+        widget.chatmodel.number,
+        ChatModel(
+            number: widget.chatmodel.number,
+            name: widget.chatmodel.name,
+            lastmessage: mess,
+            status: widget.chatmodel.status,
+            epoch: timee,
+            time: time));
   }
 }

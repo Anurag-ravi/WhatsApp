@@ -176,64 +176,77 @@ class _SelectContactState extends State<SelectContact> {
               child: CircularProgressIndicator(),
             )
           : contacts.length == 0
-              ? Center(
-                  child: Text(
-                      "No Contacts Available, please refresh or invite your friends to the app"),
+              ? RefreshIndicator(
+                  onRefresh: refreshcontacts,
+                  child: Center(
+                    child: Text(
+                        "No Contacts Available, please refresh or invite your friends to the app"),
+                  ),
                 )
-              : ListView.builder(
-                  itemCount: contacts.length + 2,
-                  itemBuilder: (context, index) {
-                    if (index == 0) {
-                      return InkWell(
-                        onTap: () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (builder) => NewGroup()));
-                        },
-                        child: ButtonCard(
-                          icon: Icons.group,
-                          name: "New group",
-                        ),
-                      );
-                    } else if (index == 1) {
-                      return ButtonCard(
-                        icon: Icons.person_add,
-                        name: "New contact",
-                      );
-                    } else {
-                      return InkWell(
-                        child: NewContactCard(contact: contacts[index - 2]),
-                        onTap: () {
-                          ChatModel obj = (chatBox
-                              .get(contacts[index - 2].number)) as ChatModel;
-                          if (obj != null) {
-                          } else {
-                            DateTime now = DateTime.now();
-                            chatBox.put(
-                                contacts[index - 2].number,
-                                ChatModel(
-                                    number: contacts[index - 2].number,
-                                    name: contacts[index - 2].name,
-                                    lastmessage: '',
-                                    status: contacts[index - 2].status,
-                                    epoch: now.millisecondsSinceEpoch,
-                                    time: '${now.hour}:${now.minute}'));
-                          }
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => ChatDetail(
-                                        chatmodel: (chatBox.get(
-                                                contacts[index - 2].number))
-                                            as ChatModel,
-                                        socket: widget.socket,
-                                      )));
-                        },
-                      );
-                      // return Container();
-                    }
-                  },
+              : RefreshIndicator(
+                  onRefresh: refreshcontacts,
+                  child: ListView.builder(
+                    itemCount: contacts.length + 2,
+                    itemBuilder: (context, index) {
+                      if (index == 0) {
+                        return InkWell(
+                          onTap: () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (builder) => NewGroup()));
+                          },
+                          child: ButtonCard(
+                            icon: Icons.group,
+                            name: "New group",
+                          ),
+                        );
+                      } else if (index == 1) {
+                        return ButtonCard(
+                          icon: Icons.person_add,
+                          name: "New contact",
+                        );
+                      } else {
+                        return InkWell(
+                          child: NewContactCard(contact: contacts[index - 2]),
+                          onTap: () {
+                            ChatModel obj = (chatBox
+                                .get(contacts[index - 2].number)) as ChatModel;
+                            if (obj != null) {
+                            } else {
+                              DateTime now = DateTime.now();
+                              int min = now.minute;
+                              String time = "${now.hour}:";
+                              if (min < 10) {
+                                time += "0${min}";
+                              } else {
+                                time += "${min}";
+                              }
+                              chatBox.put(
+                                  contacts[index - 2].number,
+                                  ChatModel(
+                                      number: contacts[index - 2].number,
+                                      name: contacts[index - 2].name,
+                                      lastmessage: '',
+                                      status: contacts[index - 2].status,
+                                      epoch: now.millisecondsSinceEpoch,
+                                      time: time));
+                            }
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => ChatDetail(
+                                          chatmodel: (chatBox.get(
+                                                  contacts[index - 2].number))
+                                              as ChatModel,
+                                          socket: widget.socket,
+                                        ))).then((value) => null);
+                          },
+                        );
+                        // return Container();
+                      }
+                    },
+                  ),
                 ),
     );
   }

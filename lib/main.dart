@@ -10,6 +10,7 @@ import 'package:whatsapp/Screens/InitialSceens/landing_screen.dart';
 import 'package:whatsapp/Screens/cameraPage/camera_screen.dart';
 import 'package:whatsapp/models/chat.dart';
 import 'package:whatsapp/models/contactmodel.dart';
+import 'package:whatsapp/models/message.dart';
 import 'package:whatsapp/pages/homepage.dart';
 
 late SharedPreferences prefs;
@@ -20,6 +21,7 @@ Future<void> main() async {
   prefs = await SharedPreferences.getInstance();
   Hive.registerAdapter(ContactModelAdapter());
   Hive.registerAdapter(ChatModelAdapter());
+  Hive.registerAdapter(MessageModelAdapter());
   await Hive.initFlutter();
 
   await Hive.openBox<ContactModel>('contacts');
