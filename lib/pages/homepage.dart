@@ -30,15 +30,18 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage>
     with SingleTickerProviderStateMixin {
   TabController? _tabController;
-  late IO.Socket socket;
+  IO.Socket socket = IO.io(url, <String, dynamic>{
+    "transports": ["websocket"],
+    "autoConnect": false,
+  });
 
   @override
   void initState() {
+    connect();
     _tabController = TabController(length: 4, initialIndex: 1, vsync: this)
       ..addListener(() {
         setState(() {});
       });
-    connect();
     super.initState();
   }
 

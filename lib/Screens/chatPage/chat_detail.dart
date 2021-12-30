@@ -73,7 +73,7 @@ class _ChatDetailState extends State<ChatDetail> {
   }
 
   Future<void> getChats() async {
-    openMessageModelBox(widget.chatmodel.number);
+    await openMessageModelBox(widget.chatmodel.number);
     final box = Hive.box<MessageModel>(widget.chatmodel.number);
     List<MessageModel> temp = box.values.toList();
     temp.sort((a, b) {
@@ -83,7 +83,7 @@ class _ChatDetailState extends State<ChatDetail> {
       messages = temp;
       loading = false;
     });
-    openChatModelBox();
+    await openChatModelBox();
     final boxx = Hive.box<ChatModel>('chats');
     ChatModel instance = boxx.get(widget.chatmodel.number) as ChatModel;
     if (instance != null) {
@@ -494,7 +494,7 @@ class _ChatDetailState extends State<ChatDetail> {
   }
 
   void updateLastMessage(String mess, int timee) async {
-    openChatModelBox();
+    await openChatModelBox();
     final chatBox = Hive.box<ChatModel>('chats');
     ChatModel obj = (chatBox.get(widget.chatmodel.number)) as ChatModel;
     chatBox.put(

@@ -39,7 +39,7 @@ class _ChatPageState extends State<ChatPage> {
       getChats();
     });
     widget.socket.on('joinresponse', (data) async {
-      Map<String, dynamic> onlines = jsonDecode(data);
+      List onlines = jsonDecode(data);
       getOnline(onlines);
       getChats();
     });
@@ -58,11 +58,11 @@ class _ChatPageState extends State<ChatPage> {
     });
   }
 
-  Future<void> getOnline(Map<String, dynamic> onlines) async {
-    openChatModelBox();
+  Future<void> getOnline(List onlines) async {
+    await openChatModelBox();
     final box = Hive.box<ChatModel>('chats');
-    onlines.forEach((key, value) async {
-      ChatModel obj = (box.get(key)) as ChatModel;
+    onlines.forEach((key) async {
+      ChatModel obj = (box.get(key.toString())) as ChatModel;
       if (obj != null) {
         await box.put(
             obj.number,
