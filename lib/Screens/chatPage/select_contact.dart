@@ -11,6 +11,7 @@ import 'package:whatsapp/Components/chatPage/new_contact_card.dart';
 import 'package:whatsapp/Screens/chatPage/chat_detail.dart';
 import 'package:whatsapp/Screens/chatPage/new_group.dart';
 import 'package:http/http.dart' as http;
+import 'package:whatsapp/Utilities/time.dart';
 import 'package:whatsapp/data.dart';
 import 'package:whatsapp/models/chat.dart';
 import 'package:whatsapp/models/contactmodel.dart';
@@ -175,7 +176,7 @@ class _SelectContactState extends State<SelectContact> {
           ? Center(
               child: CircularProgressIndicator(),
             )
-          : contacts.length == 0
+          : contacts.isEmpty
               ? RefreshIndicator(
                   onRefresh: refreshcontacts,
                   child: Center(
@@ -215,13 +216,6 @@ class _SelectContactState extends State<SelectContact> {
                             if (obj != null) {
                             } else {
                               DateTime now = DateTime.now();
-                              int min = now.minute;
-                              String time = "${now.hour}:";
-                              if (min < 10) {
-                                time += "0${min}";
-                              } else {
-                                time += "${min}";
-                              }
                               chatBox.put(
                                   contacts[index - 2].number,
                                   ChatModel(
@@ -233,7 +227,8 @@ class _SelectContactState extends State<SelectContact> {
                                       seen: true,
                                       last: false,
                                       online: false,
-                                      time: time));
+                                      time: timeFromEpoch(
+                                          now.millisecondsSinceEpoch)));
                             }
                             Navigator.push(
                                 context,

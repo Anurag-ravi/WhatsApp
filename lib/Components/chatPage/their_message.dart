@@ -22,7 +22,8 @@ class TheirMessage extends StatelessWidget {
         ),
         child: Card(
           elevation: 2,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           margin: EdgeInsets.symmetric(vertical: 5, horizontal: 12),
           color: Color(0xffffffff),
           child: Stack(

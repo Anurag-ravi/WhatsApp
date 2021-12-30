@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:whatsapp/Screens/user/setting_screen.dart';
+import 'package:whatsapp/Utilities/box.dart';
+import 'package:whatsapp/Utilities/time.dart';
 import 'package:whatsapp/data.dart';
 import 'package:whatsapp/models/chat.dart';
 import 'package:whatsapp/models/contactmodel.dart';
@@ -26,7 +28,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage>
-    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
+    with SingleTickerProviderStateMixin {
   TabController? _tabController;
   late IO.Socket socket;
 
@@ -36,27 +38,8 @@ class _MyHomePageState extends State<MyHomePage>
       ..addListener(() {
         setState(() {});
       });
-    WidgetsBinding.instance!.addObserver(this);
     connect();
     super.initState();
-  }
-
-  @override
-  void dispose() {
-    // TODO: implement dispose
-    WidgetsBinding.instance!.removeObserver(this);
-    super.dispose();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    // TODO: implement didChangeAppLifecycleState
-    super.didChangeAppLifecycleState(state);
-
-    if (state == AppLifecycleState.inactive ||
-        state == AppLifecycleState.detached) {
-      return;
-    }
   }
 
   void connect() async {
@@ -72,10 +55,7 @@ class _MyHomePageState extends State<MyHomePage>
     });
     setState(() {});
     socket.on('reply', (data) async {
-      if (Hive.isBoxOpen(data['from'])) {
-      } else {
-        await Hive.openBox<MessageModel>(data['from']);
-      }
+      openMessageModelBox(data['from']);
       final box = Hive.box<MessageModel>(data['from']);
       box.add(MessageModel(
           message: data['message'], own: false, epoch: data['time']));
@@ -103,10 +83,7 @@ class _MyHomePageState extends State<MyHomePage>
       }
     });
     socket.on("lefted", (data) async {
-      if (Hive.isBoxOpen('chats')) {
-      } else {
-        await Hive.openBox<ChatModel>('chats');
-      }
+      openChatModelBox();
       final box = Hive.box<ChatModel>('chats');
       ChatModel instance = box.get(data) as ChatModel;
       if (instance != null) {
@@ -129,27 +106,13 @@ class _MyHomePageState extends State<MyHomePage>
     });
   }
 
-  void updateLastMessage(String mess, int timee, String from) async {
-    if (Hive.isBoxOpen('chats')) {
-    } else {
-      await Hive.openBox<MessageModel>('chats');
-    }
-    if (Hive.isBoxOpen('contacts')) {
-    } else {
-      await Hive.openBox<ContactModel>('contacts');
-    }
+  void updateLastMessage(String mess, int epoch, String from) async {
+    openChatModelBox();
+    openContactModelBox();
     final chatBox = Hive.box<ChatModel>('chats');
     final contactBox = Hive.box<ContactModel>('contacts');
     ChatModel obj = (chatBox.get(from)) as ChatModel;
     if (obj != null) {
-      DateTime now = DateTime.fromMillisecondsSinceEpoch(timee);
-      int min = now.minute;
-      String time = "${now.hour}:";
-      if (min < 10) {
-        time += "0${min}";
-      } else {
-        time += "${min}";
-      }
       chatBox.put(
           obj.number,
           ChatModel(
@@ -157,22 +120,14 @@ class _MyHomePageState extends State<MyHomePage>
               name: obj.name,
               lastmessage: mess,
               status: obj.status,
-              epoch: timee,
+              epoch: epoch,
               seen: false,
               last: false,
               online: obj.online,
-              time: time));
+              time: timeFromEpoch(epoch)));
     } else {
       ContactModel obj = contactBox.get(from) as ContactModel;
       if (obj != null) {
-        DateTime now = DateTime.fromMillisecondsSinceEpoch(timee);
-        int min = now.minute;
-        String time = "${now.hour}:";
-        if (min < 10) {
-          time += "0${min}";
-        } else {
-          time += "${min}";
-        }
         chatBox.put(
             obj.number,
             ChatModel(
@@ -180,20 +135,12 @@ class _MyHomePageState extends State<MyHomePage>
                 name: obj.name,
                 lastmessage: mess,
                 status: obj.number,
-                epoch: now.millisecondsSinceEpoch,
+                epoch: epoch,
                 seen: false,
                 last: false,
                 online: true,
-                time: time));
+                time: timeFromEpoch(epoch)));
       } else {
-        DateTime now = DateTime.fromMillisecondsSinceEpoch(timee);
-        int min = now.minute;
-        String time = "${now.hour}:";
-        if (min < 10) {
-          time += "0${min}";
-        } else {
-          time += "${min}";
-        }
         chatBox.put(
             from,
             ChatModel(
@@ -204,8 +151,8 @@ class _MyHomePageState extends State<MyHomePage>
                 seen: false,
                 online: true,
                 last: false,
-                epoch: now.millisecondsSinceEpoch,
-                time: time));
+                epoch: epoch,
+                time: timeFromEpoch(epoch)));
       }
     }
   }

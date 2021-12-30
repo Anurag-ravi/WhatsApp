@@ -6,6 +6,8 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:whatsapp/Components/chatPage/our_message.dart';
 import 'package:whatsapp/Components/chatPage/their_message.dart';
+import 'package:whatsapp/Utilities/box.dart';
+import 'package:whatsapp/Utilities/time.dart';
 import 'package:whatsapp/models/chat.dart';
 import 'package:emoji_picker/emoji_picker.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
@@ -71,10 +73,7 @@ class _ChatDetailState extends State<ChatDetail> {
   }
 
   Future<void> getChats() async {
-    if (Hive.isBoxOpen(widget.chatmodel.number)) {
-    } else {
-      await Hive.openBox<MessageModel>(widget.chatmodel.number);
-    }
+    openMessageModelBox(widget.chatmodel.number);
     final box = Hive.box<MessageModel>(widget.chatmodel.number);
     List<MessageModel> temp = box.values.toList();
     temp.sort((a, b) {
@@ -84,10 +83,7 @@ class _ChatDetailState extends State<ChatDetail> {
       messages = temp;
       loading = false;
     });
-    if (Hive.isBoxOpen('chats')) {
-    } else {
-      await Hive.openBox<ChatModel>('chats');
-    }
+    openChatModelBox();
     final boxx = Hive.box<ChatModel>('chats');
     ChatModel instance = boxx.get(widget.chatmodel.number) as ChatModel;
     if (instance != null) {
@@ -97,9 +93,9 @@ class _ChatDetailState extends State<ChatDetail> {
           lastmessage: instance.lastmessage,
           status: instance.status,
           epoch: instance.epoch,
-          online: false,
+          online: instance.online,
           last: instance.last,
-          seen: instance.seen,
+          seen: true,
           time: instance.time);
       await boxx.put(widget.chatmodel.number, now);
     }
@@ -498,20 +494,9 @@ class _ChatDetailState extends State<ChatDetail> {
   }
 
   void updateLastMessage(String mess, int timee) async {
-    if (Hive.isBoxOpen('chats')) {
-    } else {
-      await Hive.openBox<MessageModel>('chats');
-    }
+    openChatModelBox();
     final chatBox = Hive.box<ChatModel>('chats');
     ChatModel obj = (chatBox.get(widget.chatmodel.number)) as ChatModel;
-    DateTime now = DateTime.fromMillisecondsSinceEpoch(timee);
-    int min = now.minute;
-    String time = "${now.hour}:";
-    if (min < 10) {
-      time += "0${min}";
-    } else {
-      time += "${min}";
-    }
     chatBox.put(
         widget.chatmodel.number,
         ChatModel(
@@ -523,6 +508,6 @@ class _ChatDetailState extends State<ChatDetail> {
             seen: true,
             last: true,
             online: widget.chatmodel.online,
-            time: time));
+            time: timeFromEpoch(timee)));
   }
 }
