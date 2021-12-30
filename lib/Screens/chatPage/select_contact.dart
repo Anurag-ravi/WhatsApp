@@ -230,6 +230,9 @@ class _SelectContactState extends State<SelectContact> {
                                       lastmessage: '',
                                       status: contacts[index - 2].status,
                                       epoch: now.millisecondsSinceEpoch,
+                                      seen: true,
+                                      last: false,
+                                      online: false,
                                       time: time));
                             }
                             Navigator.push(

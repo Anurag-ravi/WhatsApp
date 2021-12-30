@@ -2,11 +2,14 @@
 
 import 'dart:convert';
 
+import 'package:contacts_service/contacts_service.dart';
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:otp_text_field/otp_text_field.dart';
 import 'package:otp_text_field/style.dart';
 import 'package:http/http.dart' as http;
 import 'package:whatsapp/data.dart';
+import 'package:whatsapp/models/contactmodel.dart';
 import 'package:whatsapp/pages/homepage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -246,6 +249,7 @@ class _OTPScreenState extends State<OTPScreen> {
             ),
           ),
         );
+        refreshcontacts();
       } else {
         // otp not verified
         setState(() {
@@ -292,5 +296,60 @@ class _OTPScreenState extends State<OTPScreen> {
     } else {
       print(response.statusCode);
     }
+  }
+
+  Future<void> refreshcontacts() async {
+    List<Contact> _contacts = await ContactsService.getContacts();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    final response = await http.get(
+      Uri.parse("${url}users/all"),
+      headers: {
+        'Content-type': 'application/json',
+        'Accept': 'application/json',
+      },
+    );
+    var list = [];
+    if (response.statusCode == 200) {
+      list = await json
+          .decode(response.body)
+          .map((data) => ContactModel.fromJson(data))
+          .toList();
+    }
+    List<ContactModel> _contacts2 = [];
+    List<String> numbers = [];
+    list.forEach((listitem) {
+      _contacts.forEach((contact) {
+        if (contact.phones != null) {
+          contact.phones!.forEach((element) {
+            var phonestr = element.value.toString();
+            if (listitem.number.contains(flattenphone(phonestr))) {
+              var ele = ContactModel(
+                  number: listitem.number,
+                  name: contact.displayName.toString(),
+                  status: listitem.status);
+              if (numbers.contains(listitem.number) ||
+                  prefs.getString('fullNumber') == listitem.number) {
+              } else {
+                _contacts2.add(ele);
+                numbers.add(listitem.number);
+              }
+            }
+          });
+        }
+      });
+    });
+    if (Hive.isBoxOpen('contacts')) {
+    } else {
+      await Hive.openBox<ContactModel>('contacts');
+    }
+    final box = Hive.box<ContactModel>('contacts');
+    _contacts2.forEach((contact) async {
+      await box.put(contact.number, contact);
+    });
+  }
+
+  String flattenphone(String phonestr) {
+    var phone = phonestr.replaceAll(RegExp(r'^(\+)|\D'), '');
+    return phone;
   }
 }

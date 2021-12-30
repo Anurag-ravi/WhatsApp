@@ -29,6 +29,12 @@ class _ChatPageState extends State<ChatPage> {
     widget.socket.on('reply', (data) async {
       getChats();
     });
+    widget.socket.on('joined', (data) async {
+      getChats();
+    });
+    widget.socket.on('lefted', (data) async {
+      getChats();
+    });
   }
 
   Future<void> getChats() async {

@@ -22,6 +22,9 @@ class ChatModelAdapter extends TypeAdapter<ChatModel> {
       lastmessage: fields[2] as String,
       status: fields[4] as String,
       epoch: fields[5] as int,
+      online: fields[6] as bool,
+      last: fields[8] == null ? true : fields[8] as bool,
+      seen: fields[7] as bool,
       time: fields[3] as String,
     );
   }
@@ -29,7 +32,7 @@ class ChatModelAdapter extends TypeAdapter<ChatModel> {
   @override
   void write(BinaryWriter writer, ChatModel obj) {
     writer
-      ..writeByte(6)
+      ..writeByte(9)
       ..writeByte(0)
       ..write(obj.number)
       ..writeByte(1)
@@ -41,7 +44,13 @@ class ChatModelAdapter extends TypeAdapter<ChatModel> {
       ..writeByte(4)
       ..write(obj.status)
       ..writeByte(5)
-      ..write(obj.epoch);
+      ..write(obj.epoch)
+      ..writeByte(6)
+      ..write(obj.online)
+      ..writeByte(7)
+      ..write(obj.seen)
+      ..writeByte(8)
+      ..write(obj.last);
   }
 
   @override

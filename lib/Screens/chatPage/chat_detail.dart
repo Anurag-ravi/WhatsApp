@@ -10,6 +10,8 @@ import 'package:whatsapp/models/chat.dart';
 import 'package:emoji_picker/emoji_picker.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:whatsapp/models/message.dart';
+import 'package:flutter/services.dart';
+import 'package:assets_audio_player/assets_audio_player.dart';
 
 class ChatDetail extends StatefulWidget {
   const ChatDetail({
@@ -50,18 +52,17 @@ class _ChatDetailState extends State<ChatDetail> {
     init();
     getChats();
     widget.socket.on('reply', (data) async {
-      setState(() {
-        messages.add(MessageModel(
-            message: data['message'], own: false, epoch: data['time']));
-      });
+      if (data['from'] == widget.chatmodel.number) {
+        setState(() {
+          messages.add(MessageModel(
+              message: data['message'], own: false, epoch: data['time']));
+          AssetsAudioPlayer player = AssetsAudioPlayer();
+          player.open(
+            Audio("assets/recieve.mp3"),
+          );
+        });
+      }
     });
-  }
-
-  @override
-  void dispose() {
-    // TODO: implement dispose
-    // Hive.box(widget.chatmodel.number).close();
-    super.dispose();
   }
 
   void init() async {
@@ -83,6 +84,25 @@ class _ChatDetailState extends State<ChatDetail> {
       messages = temp;
       loading = false;
     });
+    if (Hive.isBoxOpen('chats')) {
+    } else {
+      await Hive.openBox<ChatModel>('chats');
+    }
+    final boxx = Hive.box<ChatModel>('chats');
+    ChatModel instance = boxx.get(widget.chatmodel.number) as ChatModel;
+    if (instance != null) {
+      ChatModel now = ChatModel(
+          number: instance.number,
+          name: instance.name,
+          lastmessage: instance.lastmessage,
+          status: instance.status,
+          epoch: instance.epoch,
+          online: false,
+          last: instance.last,
+          seen: instance.seen,
+          time: instance.time);
+      await boxx.put(widget.chatmodel.number, now);
+    }
   }
 
   @override
@@ -114,15 +134,28 @@ class _ChatDetailState extends State<ChatDetail> {
                 ),
                 Hero(
                   tag: widget.chatmodel.number,
-                  child: CircleAvatar(
-                    backgroundColor: Color(0xffc0c0c0),
-                    child: SvgPicture.asset(
-                      "images/person.svg",
-                      color: Colors.white,
-                      width: 35,
-                      height: 35,
-                    ),
-                    radius: 23,
+                  child: Stack(
+                    children: [
+                      CircleAvatar(
+                        backgroundColor: Color(0xffc0c0c0),
+                        child: SvgPicture.asset(
+                          "images/person.svg",
+                          color: Colors.white,
+                          width: 35,
+                          height: 35,
+                        ),
+                        radius: 23,
+                      ),
+                      Positioned(
+                          bottom: 0,
+                          right: 0,
+                          child: CircleAvatar(
+                            radius: 6,
+                            backgroundColor: widget.chatmodel.online
+                                ? Theme.of(context).colorScheme.secondary
+                                : Colors.transparent,
+                          ))
+                    ],
                   ),
                 ),
               ],
@@ -137,7 +170,9 @@ class _ChatDetailState extends State<ChatDetail> {
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                   ),
                   Text(
-                    'last seen today at 18:26',
+                    widget.chatmodel.online
+                        ? 'online'
+                        : 'last seen today at 18:26',
                     style: TextStyle(fontSize: 12),
                   ),
                 ],
@@ -425,16 +460,29 @@ class _ChatDetailState extends State<ChatDetail> {
         columns: 7,
         onEmojiSelected: (emoji, category) {
           _controller.text += emoji.emoji;
+          if (_controller.text.isNotEmpty) {
+            setState(() {
+              icon = true;
+            });
+          } else {
+            setState(() {
+              icon = false;
+            });
+          }
         });
   }
 
-  void sendMessage() {
+  void sendMessage() async {
     widget.socket.emit("message", {
       "message": _controller.text,
       "from": prefs.getString('fullNumber'),
       "time": DateTime.now().millisecondsSinceEpoch,
       "to": widget.chatmodel.number
     });
+    AssetsAudioPlayer player = AssetsAudioPlayer();
+    player.open(
+      Audio("assets/send.mp3"),
+    );
     final box = Hive.box<MessageModel>(widget.chatmodel.number);
     var mesg = MessageModel(
         message: _controller.text,
@@ -472,6 +520,9 @@ class _ChatDetailState extends State<ChatDetail> {
             lastmessage: mess,
             status: widget.chatmodel.status,
             epoch: timee,
+            seen: true,
+            last: true,
+            online: widget.chatmodel.online,
             time: time));
   }
 }

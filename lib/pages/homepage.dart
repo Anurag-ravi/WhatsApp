@@ -26,7 +26,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   TabController? _tabController;
   late IO.Socket socket;
 
@@ -36,8 +36,27 @@ class _MyHomePageState extends State<MyHomePage>
       ..addListener(() {
         setState(() {});
       });
+    WidgetsBinding.instance!.addObserver(this);
     connect();
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    WidgetsBinding.instance!.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // TODO: implement didChangeAppLifecycleState
+    super.didChangeAppLifecycleState(state);
+
+    if (state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.detached) {
+      return;
+    }
   }
 
   void connect() async {
@@ -62,8 +81,52 @@ class _MyHomePageState extends State<MyHomePage>
           message: data['message'], own: false, epoch: data['time']));
       updateLastMessage(data['message'], data['time'], data['from']);
     });
-    socket.onDisconnect((_) => print('===disconnect==='));
-    // socket.on('fromServer', (_) => print(_));
+    socket.on("joined", (data) async {
+      if (Hive.isBoxOpen('chats')) {
+      } else {
+        await Hive.openBox<ChatModel>('chats');
+      }
+      final box = Hive.box<ChatModel>('chats');
+      ChatModel instance = box.get(data) as ChatModel;
+      if (instance != null) {
+        ChatModel now = ChatModel(
+            number: instance.number,
+            name: instance.name,
+            lastmessage: instance.lastmessage,
+            status: instance.status,
+            epoch: instance.epoch,
+            online: true,
+            last: instance.last,
+            seen: instance.seen,
+            time: instance.time);
+        await box.put(data, now);
+      }
+    });
+    socket.on("lefted", (data) async {
+      if (Hive.isBoxOpen('chats')) {
+      } else {
+        await Hive.openBox<ChatModel>('chats');
+      }
+      final box = Hive.box<ChatModel>('chats');
+      ChatModel instance = box.get(data) as ChatModel;
+      if (instance != null) {
+        ChatModel now = ChatModel(
+            number: instance.number,
+            name: instance.name,
+            lastmessage: instance.lastmessage,
+            status: instance.status,
+            epoch: instance.epoch,
+            online: false,
+            last: instance.last,
+            seen: instance.seen,
+            time: instance.time);
+        await box.put(data, now);
+      }
+    });
+    String id = prefs.getString('fullNumber');
+    socket.onDisconnect((id) {
+      print('===disconnect===');
+    });
   }
 
   void updateLastMessage(String mess, int timee, String from) async {
@@ -95,6 +158,9 @@ class _MyHomePageState extends State<MyHomePage>
               lastmessage: mess,
               status: obj.status,
               epoch: timee,
+              seen: false,
+              last: false,
+              online: obj.online,
               time: time));
     } else {
       ContactModel obj = contactBox.get(from) as ContactModel;
@@ -115,6 +181,9 @@ class _MyHomePageState extends State<MyHomePage>
                 lastmessage: mess,
                 status: obj.number,
                 epoch: now.millisecondsSinceEpoch,
+                seen: false,
+                last: false,
+                online: true,
                 time: time));
       } else {
         DateTime now = DateTime.fromMillisecondsSinceEpoch(timee);
@@ -132,6 +201,9 @@ class _MyHomePageState extends State<MyHomePage>
                 name: from,
                 lastmessage: mess,
                 status: '',
+                seen: false,
+                online: true,
+                last: false,
                 epoch: now.millisecondsSinceEpoch,
                 time: time));
       }

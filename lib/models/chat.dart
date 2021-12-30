@@ -22,11 +22,23 @@ class ChatModel {
   @HiveField(5)
   final int epoch;
 
+  @HiveField(6)
+  final bool online;
+
+  @HiveField(7)
+  final bool seen;
+
+  @HiveField(8, defaultValue: true)
+  final bool last;
+
   ChatModel(
       {required this.number,
       required this.name,
       required this.lastmessage,
       required this.status,
       required this.epoch,
+      required this.online,
+      required this.last,
+      required this.seen,
       required this.time});
 }
