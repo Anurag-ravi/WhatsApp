@@ -58,7 +58,10 @@ class _MyHomePageState extends State<MyHomePage>
     });
     setState(() {});
     socket.on('reply', (data) async {
-      openMessageModelBox(data['from']);
+      if (Hive.isBoxOpen(data['from'])) {
+      } else {
+        await Hive.openBox<MessageModel>(data['from']);
+      }
       final box = Hive.box<MessageModel>(data['from']);
       box.add(MessageModel(
           message: data['message'], own: false, epoch: data['time']));

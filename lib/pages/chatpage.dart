@@ -30,7 +30,7 @@ class _ChatPageState extends State<ChatPage> {
     getChats();
     super.initState();
     widget.socket.on('reply', (data) async {
-      getChats();
+      await getChats();
     });
     widget.socket.on('joined', (data) async {
       getChats();
@@ -40,8 +40,9 @@ class _ChatPageState extends State<ChatPage> {
     });
     widget.socket.on('joinresponse', (data) async {
       List onlines = jsonDecode(data);
-      getOnline(onlines);
-      getChats();
+      await makeallOffline();
+      await getOnline(onlines);
+      await getChats();
     });
   }
 
@@ -57,6 +58,24 @@ class _ChatPageState extends State<ChatPage> {
       chatBox = box;
     });
   }
+
+  Future<void> makeallOffline() async {
+    final box = Hive.box<ChatModel>('chats');
+    List<ChatModel> temp = box.values.toList();
+    for (var obj in temp) {
+      await box.put(
+            obj.number,
+            ChatModel(
+                number: obj.number,
+                name: obj.name,
+                lastmessage: obj.lastmessage,
+                status: obj.status,
+                epoch: obj.epoch,
+                seen: obj.seen,
+                last: obj.last,
+                online: false,
+                time: obj.time));
+    }}
 
   Future<void> getOnline(List onlines) async {
     await openChatModelBox();
